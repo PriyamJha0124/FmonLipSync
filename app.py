@@ -71,7 +71,7 @@ def process_files(source_video, driving_audio, custom_crop_radius=None, generate
         print("Creating low resolution browser playable video")
         print("Complete")
         print("High quality version saved in ./asserts/inference_results")
-        print("Thank you for using LipSick for your Lip-Sync needs.")
+        print("Thank you for using Talking head generator for your Lip-Sync needs.")
         
         # Determine the path of the same-length extra video
         same_length_video_path = output_video_path.replace('_facial_dubbing.mp4', '_samelength.mp4')
@@ -86,7 +86,7 @@ def process_files(source_video, driving_audio, custom_crop_radius=None, generate
 
 
 with gr.Blocks(css=".input_number { width: 80px; }") as iface:
-    gr.Markdown("### 🤢 LIPSICK 🤮\nUpload your video and driving audio to Lipsync.")
+    gr.Markdown("### 🤢 Talking Head Generator 🤮\nUpload your video and driving audio to Lipsync.")
 
     with gr.Tab("Process Video"):
         source_video = gr.File(label="Upload MP4 File", type="filepath", file_types=["mp4"])

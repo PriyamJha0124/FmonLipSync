@@ -6,7 +6,7 @@ opencv-python
 torch==2.2.1
 torchvision==0.17.1
 torchaudio==2.2.1
-gradio==4.26.0
+gradio==4.36.0
 psutil
 tqdm
 tensorflow-gpu==2.10.0

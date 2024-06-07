@@ -75,7 +75,7 @@ if __name__ == '__main__':
     opt = LipSickInferenceOptions().parse_args()
 
     # Convert the driving audio to WAV format if necessary
-    opt.driving_audio_path = convert_audio_to_wav(opt.driving_audio_path)
+    # opt.driving_audio_path = convert_audio_to_wav(opt.driving_audio_path)
 
     if not os.path.exists(opt.source_video_path):
         raise Exception(f'wrong video path : {opt.source_video_path}')
@@ -87,9 +87,34 @@ if __name__ == '__main__':
     if not os.path.exists(video_frame_dir):
         os.mkdir(video_frame_dir)
     video_size = extract_frames_from_video(opt.source_video_path, video_frame_dir)
+    
+    #extract audio and mixing with custom content
+    import moviepy.editor as mpe
+    video = mpe.VideoFileClip(opt.source_video_path)
+    video.audio.write_audiofile(r"extracted_sound.wav")    
+    print('=============================extracted audio from video and named to extracted_sound.wav=================')
+    import torch
+    from TTS.api import TTS
 
+    # Get device
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+
+    # List available 🐸TTS models
+    print(TTS().list_models())
+
+    # Init TTS
+    tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2").to(device)
+
+    # Run TTS
+    # ❗ Since this model is multi-lingual voice cloning model, we must set the target speaker_wav and language
+    # Text to speech list of amplitude values as output
+    wav = tts.tts(text=opt.input_text, speaker_wav="extracted_sound.wav", language="en")
+    # Text to speech to a file
+    tts.tts_to_file(text=opt.input_text, speaker_wav="extracted_sound.wav", language="en", file_path="output.wav")
+    final_audio_path = "output.wav"
     DSModel = DeepSpeech(opt.deepspeech_model_path)
-    ds_feature = DSModel.compute_audio_feature(opt.driving_audio_path)
+    # ds_feature = DSModel.compute_audio_feature(opt.driving_audio_path)
+    ds_feature = DSModel.compute_audio_feature(final_audio_path)
     res_frame_length = ds_feature.shape[0]
     ds_feature_padding = np.pad(ds_feature, ((2, 2), (0, 0)), mode='edge')
 
@@ -225,53 +250,7 @@ if __name__ == '__main__':
     video_add_audio_path = get_versioned_filename(video_add_audio_path)  # Ensures unique filenames
     if os.path.exists(video_add_audio_path):
         os.remove(video_add_audio_path)
-        
-    #extract audio and mixing with custom content
-    import moviepy.editor as mpe
-    video = mpe.VideoFileClip(opt.source_video_path)
-    video.audio.write_audiofile(r"extracted_sound.wav")    
-    print('=============================extracted audio from video and named to extracted_sound.wav=================')
     
-    # # Construct command with the additional text input argument
-    # cmd = ['conda deactivate']
-
-    # # Run the inference script as a subprocess and handle possible errors
-    # try:
-    #     subprocess.run(cmd, check=True)
-    #     print('successfully deactivate conda environment!!')
-    # except subprocess.CalledProcessError as e:
-    #     print(f"An error occurred: {e}")
-    
-    import torch
-    from TTS.api import TTS
-
-    # Get device
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-
-    # List available 🐸TTS models
-    print(TTS().list_models())
-
-    # Init TTS
-    tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2").to(device)
-
-    # Run TTS
-    # ❗ Since this model is multi-lingual voice cloning model, we must set the target speaker_wav and language
-    # Text to speech list of amplitude values as output
-    wav = tts.tts(text=opt.input_text, speaker_wav="extracted_sound.wav", language="en")
-    # Text to speech to a file
-    tts.tts_to_file(text=opt.input_text, speaker_wav="extracted_sound.wav", language="en", file_path="output.wav")
-        
-    # Construct command with the additional text input argument
-    # cmd = ['conda activate lipsick']
-
-    # # Run the inference script as a subprocess and handle possible errors
-    # try:
-    #     subprocess.run(cmd, check=True)
-    #     print('successfully deactivate conda environment!!')
-    # except subprocess.CalledProcessError as e:
-    #     print(f"An error occurred: {e}")
-    
-    final_audio_path = "output.wav"
     cmd = f'ffmpeg -i "{res_video_path}" -i "{final_audio_path}" -c:v copy -c:a aac -strict experimental -map 0:v:0 -map 1:a:0 "{video_add_audio_path}"'
     # cmd = f'ffmpeg -i "{res_video_path}" -i "{opt.driving_audio_path}" -c:v copy -c:a aac -strict experimental -map 0:v:0 -map 1:a:0 "{video_add_audio_path}"'
     subprocess.call(cmd, shell=True)

@@ -2,7 +2,8 @@ import subprocess
 import gradio as gr
 import os
 
-def process_files(source_video, driving_audio, input_text):
+# def process_files(source_video, driving_audio, input_text):
+def process_files(source_video, input_text):
     # Define paths to your pretrained model and output paths
     pretrained_model_path = "./asserts/pretrained_lipsick.pth"
     deepspeech_model_path = "./asserts/output_graph.pb"
@@ -22,7 +23,7 @@ def process_files(source_video, driving_audio, input_text):
     cmd = [
         'python', 'inference.py',
         '--source_video_path', source_video.name,
-        '--driving_audio_path', driving_audio.name,
+        # '--driving_audio_path', driving_audio.name,
         '--pretrained_lipsick_path', pretrained_model_path,
         '--deepspeech_model_path', deepspeech_model_path,
         '--res_video_dir', res_video_dir,
@@ -50,7 +51,7 @@ iface = gr.Interface(
     fn=process_files,
     inputs=[
         gr.File(label="Upload MP4 File", type="filepath", file_types=["mp4"]),
-        gr.File(label="Upload Audio File", type="filepath", file_types=["mp3", "wav", "acc", "wma", "flac", "m4a"]),  # 'm4a' for ALAC files
+        # gr.File(label="Upload Audio File", type="filepath", file_types=["mp3", "wav", "acc", "wma", "flac", "m4a"]),  # 'm4a' for ALAC files
         gr.Textbox(label="Input Text")  # Add input text box
     ],
     outputs=gr.components.Video(label="Processed Video", show_label=False),
@@ -58,5 +59,5 @@ iface = gr.Interface(
     description="Upload your video, driving audio, and enter the text to Lipsync.\nThis space requires a GPU to run. Ensure you have selected Nvidia T4 small when duplicating the space.",
     allow_flagging="never"
 )
-# iface.launch()
-iface.launch(share=True)
+iface.launch()
+# iface.launch(share=True)

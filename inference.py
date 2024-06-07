@@ -152,6 +152,7 @@ if __name__ == '__main__':
         crop_flag, crop_radius = compute_crop_radius(video_size,
                                                      res_video_landmark_data_pad[ref_index - 5:ref_index, :, :])
         if not crop_flag:
+            continue
             raise Exception('our method can not handle videos with large change of facial size!!')
         crop_radius_1_4 = crop_radius // 4
         ref_img = cv2.imread(res_video_frame_path_list_pad[ref_index - 3])[:, :, ::-1]
@@ -188,6 +189,7 @@ if __name__ == '__main__':
                                                      res_video_landmark_data_pad[clip_end_index - 5:clip_end_index,
                                                      :, :], random_scale=1.05)
         if not crop_flag:
+            continue
             raise Exception('our method can not handle videos with large change of facial size!!')
         crop_radius_1_4 = crop_radius // 4
         frame_data = cv2.imread(res_video_frame_path_list_pad[clip_end_index - 3])[:, :, ::-1]
@@ -223,6 +225,53 @@ if __name__ == '__main__':
     video_add_audio_path = get_versioned_filename(video_add_audio_path)  # Ensures unique filenames
     if os.path.exists(video_add_audio_path):
         os.remove(video_add_audio_path)
+        
+    #extract audio and mixing with custom content
+    import moviepy.editor as mpe
+    video = mpe.VideoFileClip(opt.source_video_path)
+    video.audio.write_audiofile(r"extracted_sound.wav")    
+    print('=============================extracted audio from video and named to extracted_sound.wav=================')
+    
+    # # Construct command with the additional text input argument
+    # cmd = ['conda deactivate']
+
+    # # Run the inference script as a subprocess and handle possible errors
+    # try:
+    #     subprocess.run(cmd, check=True)
+    #     print('successfully deactivate conda environment!!')
+    # except subprocess.CalledProcessError as e:
+    #     print(f"An error occurred: {e}")
+    
+    import torch
+    from TTS.api import TTS
+
+    # Get device
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+
+    # List available 🐸TTS models
+    print(TTS().list_models())
+
+    # Init TTS
+    tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2").to(device)
+
+    # Run TTS
+    # ❗ Since this model is multi-lingual voice cloning model, we must set the target speaker_wav and language
+    # Text to speech list of amplitude values as output
+    wav = tts.tts(text="Hello world! This is my first product. and This is not my voice , I am not real.", speaker_wav="extracted_sound.wav", language="en")
+    # Text to speech to a file
+    tts.tts_to_file(text="Hello world! This is my first product. and This is not my voice , I am not real.", speaker_wav="extracted_sound.wav", language="en", file_path="output.wav")
+        
+    # Construct command with the additional text input argument
+    # cmd = ['conda activate lipsick']
+
+    # # Run the inference script as a subprocess and handle possible errors
+    # try:
+    #     subprocess.run(cmd, check=True)
+    #     print('successfully deactivate conda environment!!')
+    # except subprocess.CalledProcessError as e:
+    #     print(f"An error occurred: {e}")
+    
+    
     cmd = f'ffmpeg -i "{res_video_path}" -i "{opt.driving_audio_path}" -c:v copy -c:a aac -strict experimental -map 0:v:0 -map 1:a:0 "{video_add_audio_path}"'
     subprocess.call(cmd, shell=True)
     os.remove(res_video_path)  # Clean up intermediate files

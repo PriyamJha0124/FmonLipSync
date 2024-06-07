@@ -2,7 +2,7 @@ import subprocess
 import gradio as gr
 import os
 
-def process_files(source_video, driving_audio):
+def process_files(source_video, driving_audio, input_text):
     # Define paths to your pretrained model and output paths
     pretrained_model_path = "./asserts/pretrained_lipsick.pth"
     deepspeech_model_path = "./asserts/output_graph.pb"
@@ -16,14 +16,17 @@ def process_files(source_video, driving_audio):
     # Ensure unique filename to prevent overwriting
     output_video_path = get_versioned_filename(output_video_path)
 
-    # Construct command without the landmark path argument
+    
+
+    # Construct command with the additional text input argument
     cmd = [
         'python', 'inference.py',
         '--source_video_path', source_video.name,
         '--driving_audio_path', driving_audio.name,
         '--pretrained_lipsick_path', pretrained_model_path,
         '--deepspeech_model_path', deepspeech_model_path,
-        '--res_video_dir', res_video_dir
+        '--res_video_dir', res_video_dir,
+        '--input_text', input_text  # Add this argument to the command
     ]
 
     # Run the inference script as a subprocess and handle possible errors
@@ -47,11 +50,12 @@ iface = gr.Interface(
     fn=process_files,
     inputs=[
         gr.File(label="Upload MP4 File", type="filepath", file_types=["mp4"]),
-        gr.File(label="Upload Audio File", type="filepath", file_types=["mp3", "wav", "acc", "wma", "flac", "m4a"])  # 'm4a' for ALAC files
+        gr.File(label="Upload Audio File", type="filepath", file_types=["mp3", "wav", "acc", "wma", "flac", "m4a"]),  # 'm4a' for ALAC files
+        gr.Textbox(label="Input Text")  # Add input text box
     ],
     outputs=gr.components.Video(label="Processed Video", show_label=False),
     title="🤢 Talking Head Generator 🤮",
-    description="Upload your video and driving audio to Lipsync.\nThis space requires a GPU to run. Ensure you have selected Nvidia T4 small when duplicating the space.",
+    description="Upload your video, driving audio, and enter the text to Lipsync.\nThis space requires a GPU to run. Ensure you have selected Nvidia T4 small when duplicating the space.",
     allow_flagging="never"
 )
 iface.launch()

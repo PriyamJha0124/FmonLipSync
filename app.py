@@ -58,5 +58,5 @@ iface = gr.Interface(
     description="Upload your video, driving audio, and enter the text to Lipsync.\nThis space requires a GPU to run. Ensure you have selected Nvidia T4 small when duplicating the space.",
     allow_flagging="never"
 )
-iface.launch()
-# iface.launch(share=True)
+# iface.launch()
+iface.launch(share=True)

@@ -257,9 +257,9 @@ if __name__ == '__main__':
     # Run TTS
     # ❗ Since this model is multi-lingual voice cloning model, we must set the target speaker_wav and language
     # Text to speech list of amplitude values as output
-    wav = tts.tts(text="Hello world! This is my first product. and This is not my voice , I am not real.", speaker_wav="extracted_sound.wav", language="en")
+    wav = tts.tts(text=opt.input_text, speaker_wav="extracted_sound.wav", language="en")
     # Text to speech to a file
-    tts.tts_to_file(text="Hello world! This is my first product. and This is not my voice , I am not real.", speaker_wav="extracted_sound.wav", language="en", file_path="output.wav")
+    tts.tts_to_file(text=opt.input_text, speaker_wav="extracted_sound.wav", language="en", file_path="output.wav")
         
     # Construct command with the additional text input argument
     # cmd = ['conda activate lipsick']
@@ -271,8 +271,9 @@ if __name__ == '__main__':
     # except subprocess.CalledProcessError as e:
     #     print(f"An error occurred: {e}")
     
-    
-    cmd = f'ffmpeg -i "{res_video_path}" -i "{opt.driving_audio_path}" -c:v copy -c:a aac -strict experimental -map 0:v:0 -map 1:a:0 "{video_add_audio_path}"'
+    final_audio_path = "output.wav"
+    cmd = f'ffmpeg -i "{res_video_path}" -i "{final_audio_path}" -c:v copy -c:a aac -strict experimental -map 0:v:0 -map 1:a:0 "{video_add_audio_path}"'
+    # cmd = f'ffmpeg -i "{res_video_path}" -i "{opt.driving_audio_path}" -c:v copy -c:a aac -strict experimental -map 0:v:0 -map 1:a:0 "{video_add_audio_path}"'
     subprocess.call(cmd, shell=True)
     os.remove(res_video_path)  # Clean up intermediate files
     os.remove(res_face_path)  # Clean up intermediate files

@@ -108,7 +108,7 @@ if __name__ == '__main__':
     # Run TTS
     # ❗ Since this model is multi-lingual voice cloning model, we must set the target speaker_wav and language
     # Text to speech list of amplitude values as output
-    wav = tts.tts(text=opt.input_text, speaker_wav="extracted_sound.wav", language="en")
+    # wav = tts.tts(text=opt.input_text, speaker_wav="extracted_sound.wav", language="en")
     # Text to speech to a file
     tts.tts_to_file(text=opt.input_text, speaker_wav="extracted_sound.wav", language="en", file_path="output.wav")
     final_audio_path = "output.wav"

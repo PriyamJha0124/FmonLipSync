@@ -56,6 +56,7 @@ def load_landmark_dlib(image_path):
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     faces = face_detector(gray)
     if not faces:
+        return False
         raise ValueError("No faces found in the image.")
     shape = landmark_predictor(gray, faces[0])
     landmarks = np.array([[p.x, p.y] for p in shape.parts()])
@@ -94,11 +95,32 @@ if __name__ == '__main__':
 
     print('Tracking Face')
     video_frame_path_list = glob.glob(os.path.join(video_frame_dir, '*.jpg'))
+    print('video frame dir is:', os.path.exists(video_frame_dir), video_frame_dir)
     video_frame_path_list.sort()
-    video_landmark_data = np.array([load_landmark_dlib(frame) for frame in video_frame_path_list])
+    # # video_landmark_data = np.array([load_landmark_dlib(frame) for frame in video_frame_path_list])
+    # video_landmark_data = np.array([landmark for frame in video_frame_path_list if (landmark := load_landmark_dlib(frame)) is not False])
+    
+    # Initialize an empty list to store the valid landmarks
+    valid_landmarks = []
+
+    # Filter frames and collect landmarks
+    filtered_video_frame_path_list = []
+    for frame in video_frame_path_list:
+        landmark = load_landmark_dlib(frame)
+        if landmark is not False:
+            valid_landmarks.append(landmark)
+            filtered_video_frame_path_list.append(frame)
+
+    # Convert the list of valid landmarks to a NumPy array
+    video_landmark_data = np.array(valid_landmarks)
+
+    # Optionally, update video_frame_path_list to only include frames with valid landmarks
+    video_frame_path_list = filtered_video_frame_path_list
 
     print('Aligning frames with driving audio')
-    video_frame_path_list = glob.glob(os.path.join(video_frame_dir, '*.jpg'))
+    # video_frame_path_list = glob.glob(os.path.join(video_frame_dir, '*.jpg'))
+    print("video frame path list's length is :", len(video_frame_path_list))
+    print("video_landmark_data's length is:", video_landmark_data.shape[0])
     if len(video_frame_path_list) != video_landmark_data.shape[0]:
         raise Exception('video frames are misaligned with detected landmarks')
     video_frame_path_list.sort()
@@ -216,3 +238,7 @@ def get_versioned_filename(filepath):
         filepath = f"{base}({counter}){ext}"
         counter += 1
     return filepath
+
+
+
+
